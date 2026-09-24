@@ -144,29 +144,138 @@ a:hover {
 /* ========================================
    LOGIN / REGISTRATION PAGE
    ======================================== */
-.b1 {
+html,
+body.b1 {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+body.b1 {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--color-bg) 0%, #e8e4dc 100%);
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: visible;
+    box-sizing: border-box;
+}
+
+.b1 > .page-wrapper {
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-    padding-top: 0;
-    background: linear-gradient(135deg, var(--color-bg) 0%, #e8e4dc 100%);
-    position: relative;
-    overflow: hidden;
+    padding: 20px 20px 0;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.b1 > .footer {
+    flex-shrink: 0;
+    width: 100%;
+    margin: 0;
+    margin-top: 0;
+    padding: 12px 20px;
+    box-sizing: border-box;
+}
+
+.b1 .inventory-header {
+    margin: 0 0 6px;
+    padding: 4px 0 0;
+    font-size: 1.7rem;
+}
+.b1 .inventory-header::after {
+    margin: 8px auto 0;
+}
+
+.b1 .login-container {
+    max-width: 420px;
+    width: 100%;
+    margin: 6px 0 16px;
+    padding: 22px 22px;
+}
+
+.b1 .login-logo {
+    max-width: 62px;
+    margin-bottom: 6px;
+}
+
+.b1 .login-container h2 {
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.b1 .login-text {
+    font-size: 0.88rem;
+    margin-top: 2px;
+    margin-bottom: 12px;
+}
+
+/* Compact sign-in row: username + password + sign-in button */
+.compact-signin-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 0;
+}
+.compact-signin-row label {
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+}
+.compact-signin-row input {
+    margin-bottom: 0;
+    padding: 9px 11px;
+    font-size: 0.88rem;
+}
+.compact-signin-row button {
+    padding: 9px 16px;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    align-self: end;
+}
+@media (max-width: 480px) {
+    .compact-signin-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    .compact-signin-row button {
+        grid-column: 1 / -1;
+        padding: 10px 18px;
+    }
+}
+
+@media (max-height: 720px) {
+    .b1 > .page-wrapper {
+        justify-content: flex-start;
+        padding-top: 16px;
+    }
+    .b1 .login-container {
+        padding: 18px 18px;
+        margin: 4px 0 12px;
+    }
+    .b1 .inventory-header {
+        font-size: 1.5rem;
+    }
 }
 
 .b1::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: radial-gradient(circle at 30% 70%, rgba(139, 0, 0, 0.05) 0%, transparent 50%),
                 radial-gradient(circle at 70% 30%, rgba(201, 169, 98, 0.08) 0%, transparent 50%);
     animation: bgFloat 15s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+    clip-path: inset(0);
 }
 
 @keyframes bgFloat {
@@ -1503,5 +1612,126 @@ table td, .admin-logs-table td, .view-items-table td {
 
     .button-container h2 {
         font-size: 1.1rem;
+    }
+}
+
+/* ========================================
+   RFID LOGIN SECTION (login.php)
+   ======================================== */
+.rfid-login-section .scanner-ready-card h3 {
+    color: #1e7e34;
+}
+
+.rfid-login-section .scanner-ready-icon-ready {
+    background: linear-gradient(135deg, #8B0000 0%, #C9A962 100%);
+    box-shadow: 0 8px 22px rgba(139, 0, 0, 0.38);
+}
+
+.rfid-login-section .scanner-ready-icon-ready i {
+    color: #fff;
+}
+
+@keyframes readyCardPulse {
+    0%, 100% {
+        border-color: rgba(201, 169, 98);
+        box-shadow: 0 0 0 0 rgba(201, 169, 98, 0.22);
+    }
+    50% {
+        border-color: rgba(139, 0, 0, 0.7);
+        box-shadow: 0 0 0 14px rgba(139, 0, 0, 0);
+        background: linear-gradient(135deg, rgba(201, 169, 98, 0.10) 0%, rgba(139, 0, 0, 0.08) 100%);
+    }
+}
+
+/* ========================================
+   RFID BADGES (users_list.php)
+   ======================================== */
+.rfid-badge-assigned:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(40, 167, 69, 0.2);
+}
+
+.assign-rfid-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(139, 0, 0, 0.32);
+}
+
+/* Responsive tweaks for users list RFID column */
+@media (max-width: 768px) {
+    .assign-rfid-btn {
+        width: 100% !important;
+    }
+}
+
+/* ========================================
+   ANALYTICS (analytics.php)
+   ======================================== */
+.analytics-stat-card {
+    background-color: var(--color-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border-top: 4px solid var(--color-primary);
+    padding: 20px 28px;
+    min-width: 180px;
+    text-align: center;
+}
+
+.analytics-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    line-height: 1.1;
+}
+
+.analytics-stat-label {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+.analytics-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.analytics-chart-card {
+    background-color: var(--color-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 22px;
+}
+
+.analytics-chart-card h3 {
+    font-size: 1.05rem;
+    margin-bottom: 16px;
+    color: var(--color-text);
+}
+
+.analytics-canvas-wrap {
+    position: relative;
+    height: 320px;
+    width: 100%;
+}
+
+.analytics-canvas-wrap canvas {
+    max-height: 320px;
+}
+
+.analytics-chart-card-wide {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+    .analytics-chart-grid {
+        grid-template-columns: 1fr;
+    }
+    .analytics-stat-card {
+        min-width: 140px;
+        padding: 16px 20px;
+    }
+    .analytics-stat-value {
+        font-size: 1.6rem;
     }
 }

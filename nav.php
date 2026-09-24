@@ -20,6 +20,7 @@ if (session_status() == PHP_SESSION_NONE) {
         }
         if (isset($_SESSION['user_id'])) {
             echo '<li><a href="my_logs.php" title="View My Logs"><i class="fas fa-book"></i> View My Logs</a></li>';
+            echo '<li><a href="analytics.php" title="Analytics"><i class="fas fa-chart-pie"></i> Analytics</a></li>';
         }
         if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
             echo '<li><a href="users_list.php" title="Users List"><i class="fas fa-users"></i> Users List</a></li>';

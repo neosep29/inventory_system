@@ -87,7 +87,7 @@ $cacheBuster = 'v=' . date('YmdHis');
                         </div>
                     </div>
                 </div>
-
+                <!--
                 <details class="debug-collapsible" style="margin-top:18px;">
                     <summary>
                         <i class="fas fa-terminal" style="margin-right:6px;"></i>
@@ -104,7 +104,7 @@ $cacheBuster = 'v=' . date('YmdHis');
                         </div>
                     </div>
                 </details>
-
+                -->
                 <input type="text" id="scanned-barcode" class="ghost-scanner-input"
                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                        inputmode="numeric" aria-label="Barcode scanner input">
