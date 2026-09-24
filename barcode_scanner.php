@@ -4,50 +4,114 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $scannedBarcode = $_POST['scannedBarcode'];
-    
-    // Get the user ID of the logged-in user from the session
-    $userId = $_SESSION['user_id'];
+header('Content-Type: application/json');
 
-    $sql = "SELECT * FROM items WHERE barcode = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $scannedBarcode);
-    $stmt->execute();
-    $result = $stmt->get_result();
+function sendJson($data) {
+    echo json_encode($data);
+    exit;
+}
 
-    if ($result->num_rows === 1) {
-        // Barcode exists in the database; deduct the item's quantity here.
-        $row = $result->fetch_assoc();
-        $itemId = $row['id'];
-        $itemQuantity = $row['quantity'];
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    sendJson(['status' => 'error', 'message' => 'Invalid request method.']);
+}
 
-        if ($itemQuantity > 0) {
-            // Deduct the item by decreasing the quantity
-            $newQuantity = $itemQuantity - 1;
-            $updateSql = "UPDATE items SET quantity = $newQuantity WHERE id = $itemId";
-            if ($conn->query($updateSql) === TRUE) {
-                // Log the withdrawal in the withdrawal_logs table
-                $logSql = "INSERT INTO withdrawal_logs (user_id, item_id) VALUES (?, ?)";
-                $logStmt = $conn->prepare($logSql);
-                $logStmt->bind_param("ii", $userId, $itemId);
-                
-                if ($logStmt->execute()) {
-                    echo "success";
-                } else {
-                    echo "Failed to deduct item.";
-                }
-            } else {
-                echo "Failed to deduct item.";
-            }
-        } else {
-            echo "Item out of stock.";
-        }
-    } else {
-        // Barcode not found in the database
-        echo "Failed to deduct item.";
+if (!isset($_SESSION['user_id'])) {
+    sendJson(['status' => 'error', 'message' => 'User not logged in.']);
+}
+
+$userId = (int)$_SESSION['user_id'];
+$action = isset($_POST['action']) ? $_POST['action'] : '';
+$scannedBarcode = isset($_POST['scannedBarcode']) ? trim($_POST['scannedBarcode']) : '';
+
+if (empty($scannedBarcode)) {
+    sendJson(['status' => 'error', 'message' => 'Barcode cannot be empty.']);
+}
+
+$stmt = $conn->prepare("SELECT id, name, description, quantity, barcode FROM items WHERE barcode = ? LIMIT 1");
+if (!$stmt) {
+    sendJson(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
+}
+$stmt->bind_param("s", $scannedBarcode);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows !== 1) {
+    $stmt->close();
+    sendJson(['status' => 'not_found', 'message' => 'Item not in the database.']);
+}
+
+$row = $result->fetch_assoc();
+$stmt->close();
+
+$itemId = (int)$row['id'];
+$itemName = $row['name'];
+$itemQuantity = (int)$row['quantity'];
+
+if ($action === 'lookup') {
+    sendJson([
+        'status' => 'found',
+        'item' => [
+            'id' => $itemId,
+            'name' => $itemName,
+            'description' => $row['description'],
+            'quantity' => $itemQuantity,
+            'barcode' => $row['barcode']
+        ]
+    ]);
+}
+
+if ($action === 'withdraw') {
+    $requestedQty = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 0;
+
+    if ($requestedQty <= 0) {
+        sendJson(['status' => 'error', 'message' => 'Please enter a valid quantity greater than 0.']);
     }
 
-    $stmt->close();
+    if ($requestedQty > $itemQuantity) {
+        sendJson([
+            'status' => 'error',
+            'message' => 'Insufficient stock. Only ' . $itemQuantity . ' item(s) available.'
+        ]);
+    }
+
+    $newQuantity = $itemQuantity - $requestedQty;
+
+    $conn->begin_transaction();
+
+    try {
+        $updateStmt = $conn->prepare("UPDATE items SET quantity = ? WHERE id = ?");
+        if (!$updateStmt) {
+            throw new Exception('Update prepare failed: ' . $conn->error);
+        }
+        $updateStmt->bind_param("ii", $newQuantity, $itemId);
+        if (!$updateStmt->execute()) {
+            throw new Exception('Update execute failed: ' . $updateStmt->error);
+        }
+        $updateStmt->close();
+
+        $logStmt = $conn->prepare("INSERT INTO withdrawal_logs (user_id, item_id) VALUES (?, ?)");
+        if (!$logStmt) {
+            throw new Exception('Log prepare failed: ' . $conn->error);
+        }
+        for ($i = 0; $i < $requestedQty; $i++) {
+            $logStmt->bind_param("ii", $userId, $itemId);
+            if (!$logStmt->execute()) {
+                throw new Exception('Log insert failed: ' . $logStmt->error);
+            }
+        }
+        $logStmt->close();
+
+        $conn->commit();
+
+        sendJson([
+            'status' => 'success',
+            'message' => 'Successfully withdrew ' . $requestedQty . ' unit(s) of ' . $itemName . '.',
+            'remaining' => $newQuantity
+        ]);
+    } catch (Exception $e) {
+        $conn->rollback();
+        sendJson(['status' => 'error', 'message' => $e->getMessage()]);
+    }
 }
-?>
+
+sendJson(['status' => 'error', 'message' => 'Invalid action.']);

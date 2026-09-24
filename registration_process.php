@@ -5,22 +5,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Hash the password
     $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-    $role = "user"; // Default role
-    if ($is_admin) {
-        $role = "admin"; // For admin users
-    }
-    
-    // Insert the user into the database with the assigned role
-    $sql = "INSERT INTO users (username, password, role) VALUES ('$username', '$hashed_password', '$role')";
+    $role = "user";
 
+    $sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sss", $username, $hashed_password, $role);
 
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute()) {
         header("Location: login.php");
+        exit();
     } else {
-        $error = "Error: " . $sql . "<br>" . $conn->error;
+        $error = "Error: " . $stmt->error;
     }
+    $stmt->close();
 }
 
 $conn->close();

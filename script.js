@@ -1,17 +1,49 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const hamburgerButton = document.querySelector(".hamburger-button");
-    const sideNav = document.querySelector("#sidebar");
-    const sideNavOverlay = document.querySelector("#sideNavOverlay");
+    const hamburgerButton = document.getElementById("sidebarToggleBtn");
+    const sideNav = document.getElementById("sidebar");
+    const sideNavOverlay = document.getElementById("sideNavOverlay");
 
-    hamburgerButton.addEventListener("mouseenter", function() {
-        sideNav.style.width = "300px"; // Open the side nav
-        sideNav.style.left = "0"; // Move the side nav to the visible area
-        sideNavOverlay.style.display = "block"; // Display the overlay
+    function openSidebar() {
+        sideNav.classList.add("open");
+        sideNavOverlay.classList.add("active");
+        sideNavOverlay.style.display = "block";
+    }
+
+    function closeSidebar() {
+        sideNav.classList.remove("open");
+        sideNavOverlay.classList.remove("active");
+        setTimeout(function() {
+            if (!sideNav.classList.contains("open")) {
+                sideNavOverlay.style.display = "none";
+            }
+        }, 300);
+    }
+
+    function toggleSidebar() {
+        if (sideNav.classList.contains("open")) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    }
+
+    hamburgerButton.addEventListener("click", function(e) {
+        e.stopPropagation();
+        toggleSidebar();
     });
 
-    sideNav.addEventListener("mouseleave", function() {
-        sideNav.style.width = "0"; // Close the side nav
-        sideNav.style.left = "-250px"; // Move the side nav off the screen
-        sideNavOverlay.style.display = "none"; // Hide the overlay
+    sideNavOverlay.addEventListener("click", closeSidebar);
+
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" && sideNav.classList.contains("open")) {
+            closeSidebar();
+        }
+    });
+
+    const sidebarLinks = sideNav.querySelectorAll("a");
+    sidebarLinks.forEach(function(link) {
+        link.addEventListener("click", function() {
+            closeSidebar();
+        });
     });
 });

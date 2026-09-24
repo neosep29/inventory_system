@@ -33,14 +33,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashed_password = $row["password"];
         $userRole = $row["role"];
 
-        // Debugging output
-        echo "Entered Username: $username<br>";
-        echo "Hashed Password from the Database: $hashed_password<br>";
-
         if (password_verify($password, $hashed_password)) {
             $_SESSION['user_id'] = $row["id"];
             $_SESSION['user_role'] = $userRole;
             header("Location: index.php");
+            exit();
         } else {
             $error = "Invalid password.";
         }
@@ -63,23 +60,26 @@ $conn->close();
 </head>
 
 <body class="b1">
-    <h1 class="inventory-header">Inventory System</h1>
-    <div class="login-container">
-        <img src="css/GS-logo.png" alt="Your Logo" class="login-logo">
-        <h2>UPLB Graduate School</h2>
-        <form method="post" action="login.php">
-            <label for="username">Username:</label>
-            <input type="text" name="username" required>
-            <label for="password">Password:</label>
-            <input type="password" name="password" required>
-            <button type="submit">Login</button>
-        </form>
-        <?php
-        if (isset($error)) {
-            echo "<p class='error'>$error</p>";
-        }
-        ?>
-        <p class="create-account-link">Don't have an account? <a href="registration.php">Create an account</a></p>
+    <div class="page-wrapper" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:0;">
+        <h1 class="inventory-header" style="margin-top:10px;">Inventory System</h1>
+        <div class="login-container">
+            <img src="css/GS-logo.png" alt="Your Logo" class="login-logo">
+            <h2>UPLB Graduate School</h2>
+            <p class="login-text">Sign in to your account</p>
+            <form method="post" action="login.php">
+                <label for="username">Username:</label>
+                <input type="text" name="username" required autocomplete="username">
+                <label for="password">Password:</label>
+                <input type="password" name="password" required autocomplete="current-password">
+                <button type="submit">Sign In</button>
+            </form>
+            <?php
+            if (isset($error)) {
+                echo "<p class='error'>$error</p>";
+            }
+            ?>
+            <p class="create-account-link">Don't have an account? <a href="registration.php">Create an account</a></p>
+        </div>
     </div>
     <div class="footer">
         <p>&copy; Joseph Patron || <?php echo date("Y"); ?> Inventory System</p>

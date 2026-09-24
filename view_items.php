@@ -1,5 +1,4 @@
-<?php 
-include('nav.php'); 
+<?php
 include('db_config.php');
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -7,83 +6,105 @@ if (session_status() == PHP_SESSION_NONE) {
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
+    exit;
 }
 
-// Define the number of items to display per page
 $itemsPerPage = 15;
-
-// Get the current page number from the URL, default to 1 if not provided
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-
-// Calculate the offset for the SQL query
 $offset = ($page - 1) * $itemsPerPage;
 
-// Fetch items for the current page
 $sql = "SELECT * FROM items LIMIT $itemsPerPage OFFSET $offset";
 $result = $conn->query($sql);
 
-// Calculate the total number of items
+$totalItems = 0;
 $totalItemsSql = "SELECT COUNT(*) as total FROM items";
 $totalItemsResult = $conn->query($totalItemsSql);
-$totalItems = $totalItemsResult->fetch_assoc()['total'];
+if ($totalItemsResult) {
+    $totalItems = (int)$totalItemsResult->fetch_assoc()['total'];
+}
+
+$cacheBuster = 'v=' . date('YmdHis');
 ?>
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>View Items</title>
-    <link rel="stylesheet" type="text/css" href="css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="css/style.css?<?php echo $cacheBuster; ?>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<h1 class="inventory-header">Inventory System</h1>
-<body class="view-item-body">
-    <h2>View Items</h2>
-    <div class="view-container">
-            <table class="view-items-table">
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Quantity</th>
-                    <!-- Add more table headers as needed -->
-                </tr>
+<body>
+    <?php include('nav.php'); ?>
+
+    <div class="page-wrapper">
+        <h1 class="inventory-header">Inventory System</h1>
+        <div class="container">
+            <div class="back-button" style="margin-bottom:16px;">
+                <a href="index.php">&larr; Back to Menu</a>
+            </div>
+            <div class="page-title">
+                <h2>View Items</h2>
+                <p class="subtitle">Current inventory items and stock levels</p>
+            </div>
+            <div class="view-container">
+                <div class="table-wrapper">
+                    <table class="view-items-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            if (!$result || $result->num_rows === 0) {
+                                echo "<tr><td colspan='3' style='text-align:center; padding:30px; color:#6c757d;'>No items found in inventory.</td></tr>";
+                            } else {
+                                while ($row = $result->fetch_assoc()) {
+                                    $qty = intval($row["quantity"]);
+                                    $qtyClass = '';
+                                    if ($qty <= 5) {
+                                        $qtyClass = 'quantity-low';
+                                    } elseif ($qty <= 15) {
+                                        $qtyClass = 'quantity-medium';
+                                    } else {
+                                        $qtyClass = 'quantity-high';
+                                    }
+                                    echo "<tr>";
+                                    echo "<td>" . htmlspecialchars($row["name"]) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row["description"]) . "</td>";
+                                    echo "<td class='$qtyClass'>" . htmlspecialchars($row["quantity"]) . "</td>";
+                                    echo "</tr>";
+                                }
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="pagination">
                 <?php
-                while ($row = $result->fetch_assoc()) {
-                    echo "<tr>";
-                    echo "<td>" . $row["name"] . "</td>";
-                    echo "<td>" . $row["description"] . "</td>";
-                    echo "<td>" . $row["quantity"] . "</td>";
-                    // Add more table data cells as needed
-                    echo "</tr>";
+                $totalPages = ceil($totalItems / $itemsPerPage);
+                if ($page > 1) {
+                    echo "<a href='view_items.php?page=" . ($page - 1) . "' class='pagination-button'>&larr; Previous Page</a>";
+                }
+                if ($totalPages > 1) {
+                    echo "<span class='alert alert-info' style='margin:0;'>Page $page of $totalPages</span>";
+                }
+                if ($page < $totalPages) {
+                    echo "<a href='view_items.php?page=" . ($page + 1) . "' class='pagination-button'>Next Page &rarr;</a>";
                 }
                 ?>
-            </table>
-    </div>
-
-<div class="pagination">
-    <?php
-    // Calculate the number of pages
-    $totalPages = ceil($totalItems / $itemsPerPage);
-    
-    // Previous Page button
-    if ($page > 1) {
-        echo "<a href='view_items.php?page=" . ($page - 1) . "' class='pagination-button'>Previous Page</a>";
-    }
-
-    // Next Page button
-    if ($page < $totalPages) {
-        echo "<a href='view_items.php?page=" . ($page + 1) . "' class='pagination-button'>Next Page</a>";
-    }
-    ?>
-</div>
-
-    <div class="back-button">
-            <a href="index.php">Back to Menu</a>
+            </div>
+        </div>
     </div>
     <div class="footer">
         <p>&copy; Joseph Patron || <?php echo date("Y"); ?> Inventory System</p>
     </div>
+    <script src="script.js?<?php echo $cacheBuster; ?>"></script>
 </body>
 </html>
