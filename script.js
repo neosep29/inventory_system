@@ -47,3 +47,33 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
+
+/* =========================================================
+   Auto-logout after 5 minutes of inactivity.
+   Runs on every page that includes this file (i.e. every
+   logged-in page, since they all include nav.php + script.js).
+   Any real user interaction resets the timer; a barcode/RFID
+   scan counts too, since a scanner's keystrokes fire keydown
+   events just like typing does.
+   ========================================================= */
+(function() {
+    "use strict";
+
+    var IDLE_LIMIT_MS = 2 * 60 * 1000; // 2 minutes
+    var idleTimer = null;
+
+    function goToLogout() {
+        window.location.href = "logout.php";
+    }
+
+    function resetIdleTimer() {
+        if (idleTimer) clearTimeout(idleTimer);
+        idleTimer = setTimeout(goToLogout, IDLE_LIMIT_MS);
+    }
+
+    ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"].forEach(function(evt) {
+        document.addEventListener(evt, resetIdleTimer, true);
+    });
+
+    resetIdleTimer();
+})();

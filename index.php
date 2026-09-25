@@ -385,7 +385,13 @@ $cacheBuster = 'v=' . date('YmdHis');
                 var resp = parsed.data;
                 debug('📡 Server response: ' + escapeHtml(JSON.stringify(resp).slice(0, 240)), 'info');
 
-                if (resp.status === 'found') {
+                if (resp.status === 'logout') {
+                    debug('👋 Own RFID card re-scanned — logging out...', 'success');
+                    setIconState('ready');
+                    titleEl.textContent = 'Logging out...';
+                    hintEl.textContent = 'See you next time!';
+                    window.location.href = 'login.php';
+                } else if (resp.status === 'found') {
                     if (parseInt(resp.item.quantity, 10) <= 0) {
                         alert('⚠ Sorry, "' + resp.item.name + '" is currently out of stock.');
                         debug('ℹ Item found but OUT OF STOCK', 'warn');

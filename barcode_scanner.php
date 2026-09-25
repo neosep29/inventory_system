@@ -27,6 +27,35 @@ if (empty($scannedBarcode)) {
     sendJson(['status' => 'error', 'message' => 'Barcode cannot be empty.']);
 }
 
+// ---- Tap-to-logout: if what was scanned is the logged-in user's own RFID card, log them out ----
+// (Uses the same normalization rules as rfid_login.php / registration_process.php so a re-tap always matches.)
+function rfid_normalize_for_logout($s) {
+    $s = is_string($s) ? trim($s) : '';
+    $s = preg_replace('/[^A-Za-z0-9]/', '', $s);
+    if (preg_match('/^[a-f0-9]+$/i', $s)) {
+        $s = strtoupper($s);
+    }
+    return $s;
+}
+
+$normalizedScan = rfid_normalize_for_logout($scannedBarcode);
+if ($normalizedScan !== '') {
+    $ownCardStmt = $conn->prepare("SELECT id FROM users WHERE id = ? AND rfid_number = ? LIMIT 1");
+    if ($ownCardStmt) {
+        $ownCardStmt->bind_param("is", $userId, $normalizedScan);
+        $ownCardStmt->execute();
+        $ownCardResult = $ownCardStmt->get_result();
+        $isOwnCard = $ownCardResult->num_rows === 1;
+        $ownCardStmt->close();
+
+        if ($isOwnCard) {
+            session_unset();
+            session_destroy();
+            sendJson(['status' => 'logout', 'message' => 'RFID re-scan detected — logging out.']);
+        }
+    }
+}
+
 $stmt = $conn->prepare("SELECT id, name, description, quantity, barcode FROM items WHERE barcode = ? LIMIT 1");
 if (!$stmt) {
     sendJson(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
