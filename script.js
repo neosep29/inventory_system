@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 /* =========================================================
-   Auto-logout after 5 minutes of inactivity.
+   Auto-logout after 2 minutes of inactivity.
    Runs on every page that includes this file (i.e. every
    logged-in page, since they all include nav.php + script.js).
    Any real user interaction resets the timer; a barcode/RFID
