@@ -8,6 +8,7 @@ $rfid_error = null;
     <link rel="stylesheet" type="text/css" href="css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" type="IS-logo/png" href="css/IS-logo.png">
 </head>
 <body class="b1">
     <div class="page-wrapper" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:0;">
