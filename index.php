@@ -9,6 +9,10 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
 $userRole = $_SESSION['user_role'];
 
 if (isset($_POST['logout'])) {
@@ -37,9 +41,9 @@ $cacheBuster = 'v=' . date('YmdHis');
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="IS-logo/png" href="css/IS-logo.png">
     <link rel="stylesheet" type="text/css" href="css/style.css?<?php echo $cacheBuster; ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" type="IS-logo/png" href="css/IS-logo.png">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -682,7 +686,10 @@ $cacheBuster = 'v=' . date('YmdHis');
                     var remaining = maxQty - qty;
                     debug('✅ SUCCESS — withdrew ' + qty + ' units. Remaining stock: ' + remaining, 'success');
                     alert('✅ Successfully withdrew ' + qty + ' unit(s) of "' + currentItem.name + '".\nRemaining stock: ' + remaining);
-                    closeModal();
+                    // Full reload instead of closeModal(): this gives every piece of the
+                    // scanner engine (ghost input, scan buffers, focus loop) a clean slate,
+                    // instead of trying to reset it all in place.
+                    window.location.reload();
                 } else {
                     var m = resp.message || 'Failed to process withdrawal.';
                     debug('⚠ Withdraw failed: ' + m, 'warn');

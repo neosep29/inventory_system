@@ -2,6 +2,9 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 include('db_config.php');
 
 if (isset($_SESSION['user_id'])) {
@@ -72,13 +75,13 @@ $cacheBuster = 'v=' . date('YmdHis');
                     <span>RFID received — logging you in...</span>
                 </div>
 
-                <div class="scanner-ready-card" id="rfidReadyCard" style="margin:0; padding:22px 20px; gap:18px; border-radius:12px;">
-                    <div class="scanner-ready-icon scanner-ready-icon-ready" id="rfidIcon" style="width:64px; height:64px; font-size:1.8rem;">
+                <div class="scanner-ready-card" id="rfidReadyCard" style="margin:0; padding:24px 22px; gap:20px; border-radius:12px;">
+                    <div class="scanner-ready-icon scanner-ready-icon-ready" id="rfidIcon" style="width:68px; height:68px; font-size:1.9rem;">
                         <i class="fas fa-id-card"></i>
                     </div>
                     <div class="scanner-ready-text">
-                        <h3 id="rfidStatusTitle" style="font-size:1.15rem;">Ready — Scan Your RFID Card</h3>
-                        <p id="rfidStatusHint" style="font-size:0.9rem;">Wave your card near the reader to sign in automatically</p>
+                        <h3 id="rfidStatusTitle" style="font-size:1.2rem;">Ready — Scan Your RFID Card</h3>
+                        <p id="rfidStatusHint" style="font-size:0.95rem;">Wave your card near the reader to sign in automatically</p>
                     </div>
                 </div>
 
